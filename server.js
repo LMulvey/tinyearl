@@ -10,15 +10,19 @@ function handle_incoming_req(req, res) {
     res.end(JSON.stringify( { error: null }) + "\n");
   }
 
-  if(req.url == "new") {
+  if(req.url == "/new") {
     /* Create new URL forwarder */
 
     /* Parse URL, confirm that it is indeed a valid URL.
         Create a new EARL, output the view_created w/
         new URL information */
-    console.log("Created new EARL. http://tinyearl.com/ " + earl.generateEarlID());
+    var newEarl = earl.generateEarlId();
+    var id_resp = "Created new EARL. http://tinyearl.com/" + newEarl;
+    console.log(id_resp);
     res.writeHead(200, { "Content-Type" : "application/json" });
-    res.end(JSON.stringify( { error: null }) + "\n");
+    res.end(JSON.stringify( {
+      error: null,
+      response: id_resp }) + "\n");
  }
 
 }
