@@ -1,2 +1,3 @@
 # Ignore all SQlite databases
 db/*.sqlite3
+.DS_Store
