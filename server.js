@@ -1,31 +1,30 @@
-var http = require('http'),
-    earl = require('./lib/earl.js');
+const express = require('express');
+const app = express();
+const env = require('dotenv').config();
+app.set('view engine', 'ejs');
 
-function handle_incoming_req(req, res) {
-  /* Carve our routes out */
-  if(req.url == "/") {
-    req.url = "ROOT REQUEST";
-    console.log("INCOMING REQUEST: " + req.method + " from URL: " + req.url);
-    res.writeHead(200, { "Content-Type" : "application/json" });
-    res.end(JSON.stringify( { error: null }) + "\n");
-  }
+if(env.error) return console.log('FATAL ERROR: dotenv file not found.');
 
-  if(req.url == "/new") {
-    /* Create new URL forwarder */
 
-    /* Parse URL, confirm that it is indeed a valid URL.
-        Create a new EARL, output the view_created w/
-        new URL information */
-    var newEarl = earl.generateEarlId();
-    var id_resp = "Created new EARL. http://tinyearl.com/" + newEarl;
-    console.log(id_resp);
-    res.writeHead(200, { "Content-Type" : "application/json" });
-    res.end(JSON.stringify( {
-      error: null,
-      response: id_resp }) + "\n");
- }
+// # Routes
+// ########
+app.get('/', (req, res) => {
+  res.send('Root Route');
+});
 
-}
+app.get('/ejstest', (req, res) => {
+  let data = [];
+  data['page_title'] = "EJS Page Test by Lee";
+  data['urls'] = [
+    {'url': "http://tnerl.co/dogsEatingOtherDogs32"},
+    {'url': "http://tnerl.co/whatsForDinner7643"},
+    {'url': "http://tnerl.co/helpPolice01189998819991197253"}
+  ];
 
-var s = http.createServer(handle_incoming_req);
-s.listen(8080);
+  res.render('_header.ejs', data);
+
+});
+
+app.listen(process.env.LISTEN_PORT, () => {
+  console.log('TinyEarl now listening on port ' + process.env.LISTEN_PORT + '!')
+});
