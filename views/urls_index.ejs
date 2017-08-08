@@ -1,0 +1,8 @@
+    <% include partials/_header %>
+    
+    <ul>
+    <% for (url in urls) { %>
+        <li>URL: <a href="/u/<%= url %>" target="_blank"><%= urls[url] %></a></li>
+    <% } %>
+    </ul>
+    <% include partials/_footer %>

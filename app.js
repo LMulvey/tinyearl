@@ -16,36 +16,35 @@ let earlDatabase = {};
 // # Set Express view-engine to utilize EJS
 app.set('view engine', 'ejs');
 
-
+const MAX_EARL_LENGTH = 15;
 
 // # Routes
 // ########
 
 // # '/' root
 app.get('/', (req, res) => {
-  res.send('Root Route');
+  res.redirect('/urls');
 });
 
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
-app.get("/:id", (req, res) => {
+app.get("/u/:id", (req, res) => {
   res.redirect(earlDatabase[req.params.id]);
 });
 
 app.post("/urls", (req, res) => {
   let newEarl = generateRandomEarl();
   let longURL = appendHTTP(req.body.longURL);
-  
-  // # Add to earls database
+
+  // # Add to Earls database
   earlDatabase[newEarl] = longURL;
-  console.log(earlDatabase[newEarl]);
-  res.send("Ok" + newEarl);         // Respond with 'Ok' (we will replace this)
+  res.redirect('/urls');
 });
 
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase };
+  let templateVars = { urls: earlDatabase };
   res.render("urls_index", templateVars);
 });
 
@@ -69,28 +68,79 @@ function generateRandomEarl() {
 
   let output = "";
   const words = [
-  "Dog",
-  "Cat",
-  "Fink",
-  "Dingus",
-  "Donkey"
+  "griffe",
+  "syd",
+  "wolds",
+  "encl",
+  "tour",
+  "mmus",
+  "reid",
+  "ass",
+  "fere",
+  "whap",
+  "geest",
+  "slap",
+  "splore",
+  "tache",
+  "shed",
+  "verb",
+  "kuyp",
+  "stove",
+  "youth",
+  "spa",
+  "raab",
+  "strook",
+  "hoogh",
+  "theirs",
+  "shrew",
+  "spike",
+  "jiao",
+  "game",
+  "crum",
+  "bish",
+  "loyce",
+  "twelve",
+  "frons",
+  "paur",
+  "hills",
+  "hin",
+  "dorr",
+  "joual",
+  "briggs",
+  "flesh",
+  "flank",
+  "cal",
+  "lime",
+  "flem",
+  "grange",
+  "chaw",
+  "poe",
+  "dark",
+  "belg",
+  "ziff"
   ];
 
   for(let i = 0; i < 2; i++) {
-    output += words[Math.floor(Math.random() * words.length)];
+    output += properCase(words[Math.floor(Math.random() * words.length)]);
   }
 
-  var remaining = process.env.MAX_EARL_LENGTH - output.length;
-
+  var remaining = MAX_EARL_LENGTH - output.length;
+  console.log(remaining);
   for(let j = 0; j < remaining; j++) {
     output += (Math.floor(Math.random() * 10));
   }
 
-  return output;
+  return output.substr(0,MAX_EARL_LENGTH-1);
 
 }
 
 function appendHTTP(str) {
-  if(str.substr(0,6) !== "http://" || str.substr(0,7) !== "https://") return "http://" + str;
-  else return str;
+  if(str.substr(0,7) == "http://" || str.substr(0,8) == "https://") return str;
+  else return "http://" + str;
+}
+
+function properCase(str) {
+  return str.split(' ')
+   .map(w => w[0].toUpperCase() + w.substr(1).toLowerCase())
+   .join(' ')
 }
