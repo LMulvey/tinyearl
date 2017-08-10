@@ -2,6 +2,10 @@
 const express = require('express');
 const app = express();
 
+// # Setup cookie-parser
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
 // # Setup dotenv w/ basic error-handling
 const env = require('dotenv').config();
 if(env.error) return console.log('FATAL ERROR: dotenv file not found.');
@@ -29,7 +33,7 @@ app.get('/', (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: earlDatabase };
+  let templateVars = { urls: earlDatabase, username: req.cookies['username'] };
   res.render("urls_index", templateVars);
 });
 
@@ -43,11 +47,14 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  let templateVars = { username: req.cookies['username'] };
+  res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:id", (req, res) => {
-  let templateVars = { shortURL: req.params.id, longURL: earlDatabase[req.params.id] };
+  let templateVars = { shortURL: req.params.id, 
+                       longURL: earlDatabase[req.params.id],
+                        username: req.cookies['username'] };
   res.render("urls_show", templateVars);
 });
 
@@ -60,6 +67,16 @@ app.post("/urls/:id/delete", (req, res) => {
   delete earlDatabase[req.params.id];
   res.redirect('/urls');
 })
+
+app.post("/login", (req, res) => {
+  res.cookie('username', req.body.username);
+  res.redirect('/urls')
+});
+
+app.post("/logout", (req,res) => {
+  res.clearCookie('username');
+  res.redirect('/urls');
+});
 
 app.get("/u/:id", (req, res) => {
   res.redirect(earlDatabase[req.params.id]);

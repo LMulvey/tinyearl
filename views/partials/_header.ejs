@@ -15,4 +15,15 @@
     </head>
     <body>
     <h1>TinyEarl</h1><h3><a href="/">Home</a> | <a href="/urls/new">New URL</a></h3>
-    
+
+
+    <% if(username == null) { %>
+    <form method="POST" action="/login">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" placeholder="Type any username you want.">
+        <input type="submit" class="btn btn-sm btn-success" value="Login!">
+    </form>
+    <% } else { %>
+        <h4>Welcome back, <%= username %>!</h4>
+       <form> <button class="btn btn-alert" formmethod="POST" formaction="/logout">Logout</button> </form>
+    <% } %>

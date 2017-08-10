@@ -4,9 +4,12 @@
     <% for (url in urls) { %>
         <li>
         URL: <a href="/u/<%= url %>" target="_blank"><%= urls[url] %></a> - 
-        <a  href="/urls/<%= url %>" class="btn btn-success">Edit</a>
-        <button class="btn btn-danger" formaction="/urls/<%= url %>/delete" formmethod="POST">Delete!</button>
+        <a href="/urls/<%= url %>" class="btn btn-success">Edit</a>
+        <form>
+            <button class="btn btn-danger" formaction="/urls/<%= url %>/delete" formmethod="POST">Delete!</button>
+        </form>
     </li>
     <% } %>
     </ul>
+
     <% include partials/_footer %>
