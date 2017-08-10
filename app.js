@@ -16,22 +16,21 @@ let earlDatabase = {};
 // # Set Express view-engine to utilize EJS
 app.set('view engine', 'ejs');
 
+// # Options (intergers are not allowed inside dotenv)
 const MAX_EARL_LENGTH = 15;
 
-// # Routes
-// ########
+// ##########
+// # Routes #
+// ##########
 
 // # '/' root
 app.get('/', (req, res) => {
   res.redirect('/urls');
 });
 
-app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
-});
-
-app.get("/u/:id", (req, res) => {
-  res.redirect(earlDatabase[req.params.id]);
+app.get("/urls", (req, res) => {
+  let templateVars = { urls: earlDatabase };
+  res.render("urls_index", templateVars);
 });
 
 app.post("/urls", (req, res) => {
@@ -43,14 +42,27 @@ app.post("/urls", (req, res) => {
   res.redirect('/urls');
 });
 
-app.get("/urls", (req, res) => {
-  let templateVars = { urls: earlDatabase };
-  res.render("urls_index", templateVars);
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
 });
 
 app.get("/urls/:id", (req, res) => {
-  let templateVars = { shortURL: req.params.id };
+  let templateVars = { shortURL: req.params.id, longURL: earlDatabase[req.params.id] };
   res.render("urls_show", templateVars);
+});
+
+app.post("/urls/:id", (req,res) => {
+  earlDatabase[req.params.id] = appendHTTP(req.body.longURL);
+  res.redirect('/urls');
+});
+
+app.post("/urls/:id/delete", (req, res) => {
+  delete earlDatabase[req.params.id];
+  res.redirect('/urls');
+})
+
+app.get("/u/:id", (req, res) => {
+  res.redirect(earlDatabase[req.params.id]);
 });
 
 app.listen(process.env.LISTEN_PORT, () => {
@@ -58,15 +70,17 @@ app.listen(process.env.LISTEN_PORT, () => {
 });
 
 
-
-// # Functions
-// ###########
+// #############
+// # Functions #
+// #############
 
 function generateRandomEarl() {
-  /* Basic weird-word + numeral generator */
-  /* ADD function to check if EARL ID already exists!!!! ***/
+/* Basic weird-word + numeral generator */
+/* ADD function to check if EARL ID already exists!!!! ***/
 
-  let output = "";
+  let output = "",
+  remaining = MAX_EARL_LENGTH - output.length;
+
   const words = [
   "griffe",
   "syd",
@@ -124,8 +138,6 @@ function generateRandomEarl() {
     output += properCase(words[Math.floor(Math.random() * words.length)]);
   }
 
-  var remaining = MAX_EARL_LENGTH - output.length;
-  console.log(remaining);
   for(let j = 0; j < remaining; j++) {
     output += (Math.floor(Math.random() * 10));
   }
