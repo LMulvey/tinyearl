@@ -1,8 +1,8 @@
     <% include partials/_header %>
 
-        <form action="/urls/<%= shortURL %>" method="POST" style="margin:150px;">
+        <form action="/urls/<%= shortURL %>" method="POST">
         <label for="longURL"><%= shortURL %>:</label>
-        <input id="longURL" type="text" name="longURL" value="<%= longURL %>" style="width: 300px">
+        <input id="longURL" type="text" name="longURL" value="<%= longURL %>">
         <input type="submit" value="Submit">
         </form>
 

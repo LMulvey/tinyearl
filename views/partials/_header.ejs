@@ -14,16 +14,19 @@
         <link rel="stylesheet" href="css/main.css">
     </head>
     <body>
-    <h1>TinyEarl</h1><h3><a href="/">Home</a> | <a href="/urls/new">New URL</a></h3>
+    <h1>TinyEarl</h1><h3><a href="/">Home</a> | <a href="/urls/new">New URL</a> | 
+        <a href="/register">Register</a></h3>
 
 
-    <% if(username == null) { %>
+    <% if(user == null) { %>
     <form method="POST" action="/login">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" placeholder="Type any username you want.">
+        <label for="email">Email</label>
+            <input type="email" id="email" name="email">
+        <label for="password">Password</label>
+            <input type="password" id="password" name="password">
         <input type="submit" class="btn btn-sm btn-success" value="Login!">
     </form>
     <% } else { %>
-        <h4>Welcome back, <%= username %>!</h4>
+        <h4>Welcome back, <%= user['email'] %>!</h4>
        <form> <button class="btn btn-alert" formmethod="POST" formaction="/logout">Logout</button> </form>
     <% } %>

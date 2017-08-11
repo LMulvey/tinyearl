@@ -15,13 +15,25 @@ const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({extended: true}));
 
 // # Setup database (currently just an array)
-let earlDatabase = {};
+const earlDatabase = {};
+const users = {
+  1: {
+    id: 1,
+    email: 'lmulvey@me.com',
+    password: 'dogs'
+  },
+  2: {
+    id: 2,
+    email: 'dogs@dogs.com',
+    password: '123'
+  }
+};
 
 // # Set Express view-engine to utilize EJS
 app.set('view engine', 'ejs');
 
 // # Options (intergers are not allowed inside dotenv)
-const MAX_EARL_LENGTH = 15;
+const MAX_EARL_LENGTH = 10;
 
 // ##########
 // # Routes #
@@ -33,7 +45,7 @@ app.get('/', (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: earlDatabase, username: req.cookies['username'] };
+  let templateVars = { urls: earlDatabase, user: users[req.cookies['userid']] };
   res.render("urls_index", templateVars);
 });
 
@@ -47,14 +59,14 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  let templateVars = { username: req.cookies['username'] };
+  let templateVars = { user: users[req.cookies['userid']] };
   res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:id", (req, res) => {
   let templateVars = { shortURL: req.params.id, 
                        longURL: earlDatabase[req.params.id],
-                        username: req.cookies['username'] };
+                       user: users[req.cookies['userid']] };
   res.render("urls_show", templateVars);
 });
 
@@ -69,12 +81,32 @@ app.post("/urls/:id/delete", (req, res) => {
 })
 
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
+  let user = loginUser(req.body.email, req.body.password);
+  if(user.error) console.log(user.message); 
+  res.cookie('userid', user.id);
   res.redirect('/urls')
 });
 
 app.post("/logout", (req,res) => {
-  res.clearCookie('username');
+  res.clearCookie('userid');
+  res.redirect('/urls');
+});
+
+app.get("/register", (req, res) => {
+  res.render("register");
+});
+
+app.post("/register", (req, res) => {
+  if(req.body.email == '' || req.body.password == '') res.status(400).send('Email or Password fields are empty.');
+  let userid = Object.keys(users).length+1;
+  users[userid] = { 
+    id: userid,
+    email: req.body.email,
+    password: req.body.password
+  };
+  
+  res.cookie('userid', userid);
+  console.log(users);
   res.redirect('/urls');
 });
 
@@ -90,6 +122,16 @@ app.listen(process.env.LISTEN_PORT, () => {
 // #############
 // # Functions #
 // #############
+
+function loginUser(email, password) {
+  for(key in users) {
+    if(users[key].email == email) {
+      if(users[key].password == password) return users[key];
+      else return { error: 'wrong_password', message: 'Incorrect password.' };
+    } 
+  }
+  return { error: 'invalid_email', message: 'Email not registered.' };
+}
 
 function generateRandomEarl() {
 /* Basic weird-word + numeral generator */
