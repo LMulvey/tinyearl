@@ -36,6 +36,10 @@ const ERRORS = {
     error: 'not_logged_in',
     message: "You must be logged in to perform this. Either login or register using the above links."
   },
+  'not_authorized' : {
+    error: 'not_authorized',
+    message: "You are not authorized to perform this action."
+  },
   'invalid_route' : {
     error: 'invalid_route',
     message: "The page you have requested does not exist."
@@ -97,20 +101,29 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
+  if(earlDatabase[req.params.id].userid != req.cookies['userid']) {
+    res.status(400).send(ERRORS['not_authorized'].message);
+  }
   view.ejs.shortURL = req.params.id;
-  view.ejs.longURL = earlDatabase[req.params.id];
+  view.ejs.longURL = earlDatabase[req.params.id].longURL;
   view.ejs.user = users[req.cookies['userid']];
 
   res.render("urls_show", view.ejs);
 });
 
 app.post("/urls/:id", (req,res) => {
+   if(earlDatabase[req.params.id].userid != req.cookies['userid']) {
+    res.status(400).send(ERRORS['not_authorized'].message);
+  }
   earlDatabase[req.params.id].longURL = appendHTTP(req.body.longURL);
   console.log(earlDatabase);
   res.redirect('/urls');
 });
 
 app.post("/urls/:id/delete", (req, res) => {
+   if(earlDatabase[req.params.id].userid != req.cookies['userid']) {
+    res.status(400).send(ERRORS['not_authorized'].message);
+  }
   delete earlDatabase[req.params.id];
   res.redirect('/urls');
 })
