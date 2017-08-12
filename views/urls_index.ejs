@@ -1,15 +1,24 @@
-    <% include partials/_header %>
-    
-    <ul>
-    <% for (url in urls) { %>
-        <li>
-        URL: <a href="/u/<%= url %>" target="_blank"><%= urls[url] %></a> - 
-        <a href="/urls/<%= url %>" class="btn btn-success">Edit</a>
-        <form>
-            <button class="btn btn-danger" formaction="/urls/<%= url %>/delete" formmethod="POST">Delete!</button>
-        </form>
-    </li>
-    <% } %>
-    </ul>
+<% include partials/_header %>
 
-    <% include partials/_footer %>
+<% if(user == null) { %>
+    <h4>Sorry, we've encountered an error!</h4>
+    <small><%= error['not_logged_in'].message %></small>
+<% } else { %>
+
+<ul>
+<% for (url in urls) { %>
+    <% if (urls[url].userid == user.id) { %> 
+        <li>
+            URL: <a href="/u/<%= url %>" target="_blank"><%= urls[url].longURL %></a> - 
+            <a href="/urls/<%= url %>" class="btn btn-success">Edit</a>
+            <form>
+            <button class="btn btn-danger" formaction="/urls/<%= url %>/delete" formmethod="POST">Delete!</button>
+            </form>
+        </li>
+    <% } %>
+<% } %>
+</ul>
+
+<% } %>
+
+<% include partials/_footer %>

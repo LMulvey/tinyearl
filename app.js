@@ -29,11 +29,44 @@ const users = {
   }
 };
 
-// # Set Express view-engine to utilize EJS
-app.set('view engine', 'ejs');
-
 // # Options (intergers are not allowed inside dotenv)
 const MAX_EARL_LENGTH = 10;
+const ERRORS = {
+  'not_logged_in' : { 
+    error: 'not_logged_in',
+    message: "You must be logged in to perform this. Either login or register using the above links."
+  },
+  'invalid_route' : {
+    error: 'invalid_route',
+    message: "The page you have requested does not exist."
+  },
+  'login_failed' : {
+    error: 'login_failed',
+    message: "The account information provided does not match our records. Please check the email and password."
+  },
+  'already_logged_in' : {
+    error: 'already_logged_in',
+    message: "You're already logged in so whatever you're trying to do makes no sense!"
+  },
+  'reg_fields_empty' : {
+    error: 'reg_fields_empty',
+    message: "You must fill out all required fields. Please try again."
+  },
+  'reg_user_exists' : {
+    error: 'reg_user_exists',
+    message: "This email is already registered. If it belongs to you, try logging in."
+  }
+};
+
+// # Set Express view-engine to utilize EJS
+app.set('view engine', 'ejs');
+let view = {
+  ejs : {
+    urls : earlDatabase,
+    error : ERRORS,
+    register : false
+  }
+};
 
 // ##########
 // # Routes #
@@ -45,33 +78,35 @@ app.get('/', (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: earlDatabase, user: users[req.cookies['userid']] };
-  res.render("urls_index", templateVars);
+  view.ejs.user = users[req.cookies['userid']];
+  res.render("urls_index", view.ejs);
 });
 
 app.post("/urls", (req, res) => {
   let newEarl = generateRandomEarl();
-  let longURL = appendHTTP(req.body.longURL);
 
   // # Add to Earls database
-  earlDatabase[newEarl] = longURL;
+  earlDatabase[newEarl] = { userid : req.cookies['userid'], longURL : appendHTTP(req.body.longURL) };
+  console.log(earlDatabase);
   res.redirect('/urls');
 });
 
 app.get("/urls/new", (req, res) => {
-  let templateVars = { user: users[req.cookies['userid']] };
-  res.render("urls_new", templateVars);
+  view.ejs.user = users[req.cookies['userid']];
+  res.render("urls_new", view.ejs);
 });
 
 app.get("/urls/:id", (req, res) => {
-  let templateVars = { shortURL: req.params.id, 
-                       longURL: earlDatabase[req.params.id],
-                       user: users[req.cookies['userid']] };
-  res.render("urls_show", templateVars);
+  view.ejs.shortURL = req.params.id;
+  view.ejs.longURL = earlDatabase[req.params.id];
+  view.ejs.user = users[req.cookies['userid']];
+
+  res.render("urls_show", view.ejs);
 });
 
 app.post("/urls/:id", (req,res) => {
-  earlDatabase[req.params.id] = appendHTTP(req.body.longURL);
+  earlDatabase[req.params.id].longURL = appendHTTP(req.body.longURL);
+  console.log(earlDatabase);
   res.redirect('/urls');
 });
 
@@ -81,8 +116,8 @@ app.post("/urls/:id/delete", (req, res) => {
 })
 
 app.post("/login", (req, res) => {
-  let user = loginUser(req.body.email, req.body.password);
-  if(user.error) console.log(user.message); 
+  let user = authUser(req.body.email, req.body.password);
+  if(user.error) res.status(400).send(user.message);
   res.cookie('userid', user.id);
   res.redirect('/urls')
 });
@@ -93,11 +128,18 @@ app.post("/logout", (req,res) => {
 });
 
 app.get("/register", (req, res) => {
-  res.render("register");
+  view.ejs.register = true;
+  view.ejs.user = users[req.cookies['userid']];
+  res.render("register", view.ejs);
+  view.ejs.register = false;
 });
 
 app.post("/register", (req, res) => {
-  if(req.body.email == '' || req.body.password == '') res.status(400).send('Email or Password fields are empty.');
+  if(req.body.email == '' || req.body.password == '') res.status(400).send(ERRORS['reg_fields_empty'].message);
+
+  let check = userExists(req.body.email);
+  if(check.error) res.status(400).send(check.message);
+
   let userid = Object.keys(users).length+1;
   users[userid] = { 
     id: userid,
@@ -111,7 +153,7 @@ app.post("/register", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
-  res.redirect(earlDatabase[req.params.id]);
+  res.redirect(earlDatabase[req.params.id].longURL);
 });
 
 app.listen(process.env.LISTEN_PORT, () => {
@@ -123,14 +165,23 @@ app.listen(process.env.LISTEN_PORT, () => {
 // # Functions #
 // #############
 
-function loginUser(email, password) {
+function authUser(email, password) {
   for(key in users) {
     if(users[key].email == email) {
       if(users[key].password == password) return users[key];
-      else return { error: 'wrong_password', message: 'Incorrect password.' };
+      else return ERRORS['login_failed'];
     } 
   }
-  return { error: 'invalid_email', message: 'Email not registered.' };
+  return ERRORS['login_failed'];
+}
+
+function userExists(email) { 
+  for(key in users) { 
+    if(users[key].email == email) {
+      return ERRORS['reg_user_exists'];
+    }
+  }
+  return false;
 }
 
 function generateRandomEarl() {
