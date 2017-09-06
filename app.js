@@ -56,6 +56,8 @@ app.get('/urls/new', (req, res, next) => {
 
 app.get('/urls/:id', (req, res, next) => {
     view.ejs.user = db.users[req.cookies['userid']];
+
+   // Error-handling
   if(view.ejs.user == null) {
     view.ejs.errorcodes = ['not_logged_in'];
     res.render('error_page', view.ejs);
@@ -71,26 +73,36 @@ app.get('/urls/:id', (req, res, next) => {
 });
 
 app.post('/urls/:id', (req,res) => {
+
+  // Error-handling
   if(db.earls[req.params.id].userid != req.cookies['userid']) {
-    error.handleError(ERRORS['not_authorized'].message);
+    view.ejs.errorcodes = ['not_authorized'];
+    res.render('error_page', view.ejs);
   }
+
   db.earls[req.params.id].longURL = utility.appendHTTP(req.body.longURL);
-  console.log(db.earls);
   res.redirect('/urls');
 });
 
 app.post('/urls/:id/delete', (req, res, next) => {
-   if(db.earls[req.params.id].userid != req.cookies['userid']) {
-    let err = error.handleError(ERRORS['not_authorized'].message);
-    
+  if(db.earls[req.params.id].userid != req.cookies['userid']) {
+    view.ejs.errorcodes = ['not_authorized'];
+    res.render('error_page', view.ejs);
   }
+  
   db.deleteEarl(req.params.id);
   res.redirect('/urls');
 })
 
 app.post('/login', (req, res, next) => {
   let user = db.authUser(db.users, req.body.email, req.body.password);
-  if(user.error) res.status(400).send(user.message);
+
+  // Error-handling
+  if(user.error) {
+    view.ejs.errorcodes = [user.error.error];
+    res.render('error_page', view.ejs);
+  }
+
   res.cookie('userid', user.id);
   res.redirect('/urls')
 });
@@ -111,7 +123,12 @@ app.post('/register', (req, res, next) => {
   if(req.body.email == '' || req.body.password == '') res.status(400).send(config.ERRORS['reg_fields_empty'].message);
 
   let check = db.userExists(db.users, req.body.email);
-  if(check.error) res.status(400).send(check.message);
+  
+  // Error-handling
+  if(check.error) {
+    view.ejs.errorcodes = [check.error.error];
+    res.render('error_page', view.ejs);
+  }
 
   let userid = Object.keys(db.users).length+1;
   db.users[userid] = { 
