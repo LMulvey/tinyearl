@@ -1,0 +1,15 @@
+<% include partials/_header %>
+
+<% if(errorcodes.length>1) { %>
+    <h2>Sorry, we've encountered some errors!</h4>
+
+    <% for(let i = 0; i<errorcodes.length; i++) { %>
+        <small><%= error[errorcodes[i]].message %></small>
+    <% } %>
+
+<% } else { %>
+    <h2>Sorry, we've encountered an error!</h4>
+    <small><%= error[errorcodes[0]].message %></small>
+<% } %>
+
+<% include partials/_footer %>

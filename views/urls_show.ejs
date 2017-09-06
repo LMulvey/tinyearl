@@ -1,16 +1,10 @@
     <% include partials/_header %>
 
-    <% if(user == null) { %>
-        <h4>Sorry, we've encountered an error!</h4>
-        <small><%= error['not_logged_in'].message %></small>
-    <% } else { %>
-
         <form action="/urls/<%= shortURL %>" method="POST">
         <label for="longURL"><%= shortURL %>:</label>
         <input id="longURL" type="text" name="longURL" value="<%= longURL %>">
         <input type="submit" value="Submit">
         </form>
 
-    <% } %>
 
     <% include partials/_footer %>

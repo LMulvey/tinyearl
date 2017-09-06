@@ -7,11 +7,6 @@ const utility = require('./lib/utility.js'),
 const express = require('express'),
       app = express();
 
-// # Setup Custom Error-handling
-const error = require('./lib/errors.js');
-app.use(error.handler);
-
-
 // # Setup cookie-parser
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
@@ -60,16 +55,19 @@ app.get('/urls/new', (req, res, next) => {
 });
 
 app.get('/urls/:id', (req, res, next) => {
-  if(db.earls[req.params.id].userid != req.cookies['userid']) {
-    next('not_authorized');
+    view.ejs.user = db.users[req.cookies['userid']];
+  if(view.ejs.user == null) {
+    view.ejs.errorcodes = ['not_logged_in'];
+    res.render('error_page', view.ejs);
+  } else if(db.earls[req.params.id].userid != req.cookies['userid']) {
+    view.ejs.errorcodes = ['not_authorized'];
+    res.render('error_page', view.ejs);
   }
+    // Setup template vars
+    view.ejs.shortURL = req.params.id;
+    view.ejs.longURL = db.earls[req.params.id].longURL;
 
-  // Setup template vars
-  view.ejs.shortURL = req.params.id;
-  view.ejs.longURL = db.earls[req.params.id].longURL;
-  view.ejs.user = db.users[req.cookies['userid']];
-
-  res.render('urls_show', view.ejs);
+    res.render('urls_show', view.ejs);
 });
 
 app.post('/urls/:id', (req,res) => {
