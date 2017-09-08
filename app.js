@@ -1,11 +1,11 @@
 // # Modules
-const utility = require('./lib/utility.js'),
-      db = require('./lib/database.js'),
-      config = require('./lib/config.js');
+const utility = require('./lib/utility');
+const db = require('./lib/database');
+const config = require('./lib/config');
 
 // # Setup Express
-const express = require('express'),
-      app = express();
+const express = require('express')
+const app = express();
 
 // # Setup cookie-parser
 const cookieParser = require('cookie-parser');
@@ -21,86 +21,31 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 // # Set Express view-engine to utilize EJS
 app.set('view engine', 'ejs');
-let view = {
-  ejs : {
-    urls : db.earls,
-    error : config.ERRORS,
-    register : false
-  }
-};
+
 
 // ##########
 // # Routes #
 // ##########
+// Define those route files
+
+const urlsRoute = require('./routes/urls');
+const usersRoute = require('./routes/users');
+const shortRoute = require('./routes/shorturls');
 
 // # '/' root
 app.get('/', (req, res, next) => {
   res.redirect('/urls');
 });
 
-app.get('/urls', (req, res, next) => {
-  view.ejs.user = db.users[req.cookies['userid']];
-  res.render('urls_index', view.ejs);
-});
-
-app.post('/urls', (req, res, next) => {
-  let response = db.createEarl(req.cookies['userid'], req.body.longURL);
-  console.log(response);
-  res.redirect('/urls');
-});
-
-app.get('/urls/new', (req, res, next) => {
-  view.ejs.user = db.users[req.cookies['userid']];
-  res.render('urls_new', view.ejs);
-});
-
-app.get('/urls/:id', (req, res, next) => {
-    view.ejs.user = db.users[req.cookies['userid']];
-
-   // Error-handling
-  if(view.ejs.user == null) {
-    view.ejs.errorcodes = ['not_logged_in'];
-    res.render('error_page', view.ejs);
-  } else if(db.earls[req.params.id].userid != req.cookies['userid']) {
-    view.ejs.errorcodes = ['not_authorized'];
-    res.render('error_page', view.ejs);
-  }
-    // Setup template vars
-    view.ejs.shortURL = req.params.id;
-    view.ejs.longURL = db.earls[req.params.id].longURL;
-
-    res.render('urls_show', view.ejs);
-});
-
-app.post('/urls/:id', (req,res) => {
-
-  // Error-handling
-  if(db.earls[req.params.id].userid != req.cookies['userid']) {
-    view.ejs.errorcodes = ['not_authorized'];
-    res.render('error_page', view.ejs);
-  }
-
-  db.earls[req.params.id].longURL = utility.appendHTTP(req.body.longURL);
-  res.redirect('/urls');
-});
-
-app.post('/urls/:id/delete', (req, res, next) => {
-  if(db.earls[req.params.id].userid != req.cookies['userid']) {
-    view.ejs.errorcodes = ['not_authorized'];
-    res.render('error_page', view.ejs);
-  }
-  
-  db.deleteEarl(req.params.id);
-  res.redirect('/urls');
-})
+app.use('/urls', urlsRoute);
 
 app.post('/login', (req, res, next) => {
   let user = db.authUser(db.users, req.body.email, req.body.password);
-
+  const templateVars = utility.defaultTemplateVars(req);
   // Error-handling
   if(user.error) {
-    view.ejs.errorcodes = [user.error.error];
-    res.render('error_page', view.ejs);
+    templateVars.errorcodes = [user.error.error];
+    res.render('error_page', templateVars);
   }
 
   res.cookie('userid', user.id);
@@ -143,7 +88,7 @@ app.post('/register', (req, res, next) => {
 });
 
 app.get('/u/:id', (req, res, next) => {
-  res.redirect(db.earls[req.params.id].longURL);
+  res.redirect(db.earlsDatabase[req.params.id].longURL);
 });
 
 app.listen(process.env.LISTEN_PORT, () => {
