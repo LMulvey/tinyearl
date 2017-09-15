@@ -14,8 +14,9 @@
         <link rel="stylesheet" href="css/main.css">
     </head>
     <body>
-    <h1>TinyEarl</h1><h3><a href="/">Home</a> | <a href="/urls/new">New URL</a> | 
-        <a href="/register">Register</a></h3>
+    <h1>TinyEarl</h1><h3><a href="/">Home</a>
+    <% if(user != null) { %>| <a href="/urls/new">New URL</a><% } %>
+    <% if(user == null) { %> | <a href="/register">Register</a></h3> <% } %>
 
     <% if(register == false) { %>
         <% if(user == null) { %>

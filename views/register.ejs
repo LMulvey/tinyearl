@@ -1,11 +1,5 @@
     <% include partials/_header %>
 
-    <% if(user != null) { %>
-        <h4>Sorry, we've encountered an error!</h4>
-        <small><%= error['already_logged_in'].message %></small>
-    <% } else { %>
-
-
         <form action="/register" method="POST">
             <label for="email">Email</label>
                 <input id="email" type="email" name="email" />
@@ -13,7 +7,5 @@
                 <input id="password" type="password" name="password" />
                 <input type="submit" value="Submit" class="btn btn-success">
         </form>
-
-    <% } %>
 
     <% include partials/_footer %>

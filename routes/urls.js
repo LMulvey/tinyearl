@@ -23,23 +23,24 @@ router.post('/', (req, res) => {
 });
   
 router.get('/new', (req, res) => {
+  utility.authCheck(req,res);
   res.render('urls_new', utility.defaultTemplateVars(req));
 });
 
 router.get('/:id', (req, res) => {
-    utility.defaultTemplateVars(req).user = db.users[req.cookies['userid']];
+    const templateVars = utility.defaultTemplateVars(req);
+    templateVars.user = db.users[req.cookies['userid']];
 
     utility.authCheck(req,res);
 
     // Setup template vars
-    utility.defaultTemplateVars(req).shortURL = req.params.id;
-    utility.defaultTemplateVars(req).longURL = db.earlsDatabase[req.params.id].longURL;
+    templateVars.shortURL = req.params.id;
+    templateVars.longURL = db.earlsDatabase[req.params.id].longURL;
 
-    res.render('urls_show', utility.defaultTemplateVars(req));
+    res.render('urls_show', templateVars);
 });
 
 router.post('/:id', (req,res) => {
-  
   utility.authCheck(req,res);
 
   db.earlsDatabase[req.params.id].longURL = utility.appendHTTP(req.body.longURL);
@@ -47,7 +48,7 @@ router.post('/:id', (req,res) => {
 });
 
 router.post('/:id/delete', (req, res) => {
-  utility.authCheck(req);
+  utility.authCheck(req,res);
   
   db.deleteEarl(req.params.id);
   res.redirect('/');
