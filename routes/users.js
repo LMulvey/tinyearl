@@ -7,6 +7,9 @@ const config = require('../lib/config');
 const express = require('express');
 const router = express.Router();
 
+// # Setup bcrypt
+const bcrypt = require('bcrypt');
+
 // # '/' root
 router.get('/', (req, res) => {
     res.redirect('/urls');
@@ -25,8 +28,6 @@ router.post('/login', (req, res) => {
     }
   
     req.session.userid = user.id;
-    console.log('Logged in?' + user.id);
-    console.log('Req Session ID = ' + req.session.userid);
     res.redirect('/urls')
 });
   
@@ -64,7 +65,7 @@ router.post('/register', (req, res) => {
     db.users[userid] = { 
       id: userid,
       email: req.body.email,
-      password: req.body.password
+      password: bcrypt.hashSync(req.body.password, 10)
     };
     
     req.session.userid = userid;
