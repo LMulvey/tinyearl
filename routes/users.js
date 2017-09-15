@@ -13,26 +13,31 @@ router.get('/', (req, res) => {
 });
 
 router.post('/login', (req, res) => {
-    let user = db.authUser(db.users, req.body.email, req.body.password);
+    let user = db.authUser(req.body.email, req.body.password);
     const templateVars = utility.defaultTemplateVars(req);
+
+    console.log(user);
+    
     // Error-handling
     if(user.error) {
       templateVars.errorcodes = [user.error];
       res.render('error_page', templateVars);
     }
   
-    res.cookie('userid', user.id);
+    req.session.userid = user.id;
+    console.log('Logged in?' + user.id);
+    console.log('Req Session ID = ' + req.session.userid);
     res.redirect('/urls')
 });
   
 router.post('/logout', (req,res) => {
-    res.clearCookie('userid');
+    delete req.session.userid;
     res.redirect('/urls');
 });
   
 router.get('/register', (req, res) => {
     const templateVars = utility.defaultTemplateVars(req);
-    templateVars.user = db.users[req.cookies['userid']];
+    templateVars.user = db.users[req.session.userid];
     templateVars.register = true;
   
     if(templateVars.user != null) {
@@ -47,11 +52,12 @@ router.post('/register', (req, res) => {
     if(req.body.email == '' || req.body.password == '') res.status(400).send(config.ERRORS['reg_fields_empty'].message);
   
     let check = db.userExists(db.users, req.body.email);
-    
+    const templateVars = utility.defaultTemplateVars(req, res);
+
     // Error-handling
     if(check.error) {
-      view.ejs.errorcodes = [check.error.error];
-      res.render('error_page', view.ejs);
+      templateVars.errorcodes = [check.error];
+      res.render('error_page', templateVars);
     }
   
     let userid = Object.keys(db.users).length+1;
@@ -61,7 +67,7 @@ router.post('/register', (req, res) => {
       password: req.body.password
     };
     
-    res.cookie('userid', userid);
+    req.session.userid = userid;
     console.log(db.users);
     res.redirect('/urls');
 });

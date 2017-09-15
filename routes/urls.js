@@ -11,13 +11,13 @@ router.get('/', (req, res) => {
     utility.authCheck(req, res);
 
     const templateVars = utility.defaultTemplateVars(req);
-    templateVars.urls = db.grabUserUrls(db.users[req.cookies['userid']]);
+    templateVars.urls = db.grabUserUrls(db.users[req.session.userid]);
     console.log(templateVars.urls);
     res.render('urls_index', templateVars);
   });
   
 router.post('/', (req, res) => {
-  let response = db.createEarl(req.cookies['userid'], req.body.longURL);
+  let response = db.createEarl(req.session.userid, req.body.longURL);
   console.log(response);
   res.redirect('/urls');
 });
@@ -29,7 +29,7 @@ router.get('/new', (req, res) => {
 
 router.get('/:id', (req, res) => {
     const templateVars = utility.defaultTemplateVars(req);
-    templateVars.user = db.users[req.cookies['userid']];
+    templateVars.user = db.users[req.session.userid];
 
     utility.authCheck(req,res);
 

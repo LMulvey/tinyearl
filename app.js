@@ -8,8 +8,14 @@ const express = require('express')
 const app = express();
 
 // # Setup cookie-parser
-const cookieParser = require('cookie-parser');
-app.use(cookieParser());
+const cookieSession = require('cookie-session');
+app.use(cookieSession({
+  name: 'session',
+  keys: ['EIfqQKxZw1JMIkrU8KyQcqDUrXBvLq1W'],
+
+  // Cookie Options
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));
 
 // # Setup dotenv w/ basic error-handling
 const env = require('dotenv').config();
