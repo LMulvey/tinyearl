@@ -7,14 +7,12 @@ const config = require('./lib/config');
 const express = require('express')
 const app = express();
 
-// # Setup cookie-parser
+// # Setup cookie-session
 const cookieSession = require('cookie-session');
 app.use(cookieSession({
   name: 'session',
-  keys: ['EIfqQKxZw1JMIkrU8KyQcqDUrXBvLq1W'],
-
-  // Cookie Options
-  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  keys: utility.grabCookieKeys(),
+  maxAge: 48 * 60 * 60 * 1000
 }));
 
 // # Setup dotenv w/ basic error-handling
@@ -43,5 +41,3 @@ app.use('/', usersRoute);
 app.listen(process.env.LISTEN_PORT, () => {
   console.log('TinyEarl now listening on port ' + process.env.LISTEN_PORT + '!')
 });
-
-

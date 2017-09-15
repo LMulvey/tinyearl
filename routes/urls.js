@@ -12,18 +12,19 @@ router.get('/', (req, res) => {
 
     const templateVars = utility.defaultTemplateVars(req);
     templateVars.urls = db.grabUserUrls(db.users[req.session.userid]);
-    console.log(templateVars.urls);
+
     res.render('urls_index', templateVars);
   });
   
 router.post('/', (req, res) => {
   let response = db.createEarl(req.session.userid, req.body.longURL);
-  console.log(response);
+
   res.redirect('/urls');
 });
   
 router.get('/new', (req, res) => {
   utility.authCheck(req,res);
+
   res.render('urls_new', utility.defaultTemplateVars(req));
 });
 
@@ -43,7 +44,7 @@ router.get('/:id', (req, res) => {
 router.post('/:id', (req,res) => {
   utility.authCheck(req,res);
 
-  db.earlsDatabase[req.params.id].longURL = utility.appendHTTP(req.body.longURL);
+  db.modifyEarl(req.params.id, req.body.longURL);
   res.redirect('/');
 });
 
