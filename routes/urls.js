@@ -13,13 +13,16 @@ router.get('/', (req, res) => {
     const templateVars = utility.defaultTemplateVars(req);
     templateVars.urls = db.grabUserUrls(db.users[req.session.userid]);
 
+    if(req.params.s == 1) templateVars.successcode = 'added_earl';
+
     res.render('urls_index', templateVars);
   });
   
 router.post('/', (req, res) => {
-  let response = db.createEarl(req.session.userid, req.body.longURL);
-
-  res.redirect('/urls');
+  db.createEarl(req.session.userid, req.body.longURL)
+  .then(() => {
+    res.redirect('/urls?s=1');
+  });
 });
   
 router.get('/new', (req, res) => {

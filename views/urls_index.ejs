@@ -1,5 +1,7 @@
 <% include partials/_header %>
 
+<% if(successcode != null) { %> <% include partials/_success %> <% } %>
+
 <ul>
 <% for (url in urls) { %>
     <li>
