@@ -13,8 +13,8 @@ router.get('/', (req, res) => {
     const templateVars = utility.defaultTemplateVars(req);
     templateVars.urls = db.grabUserUrls(db.users[req.session.userid]);
 
-    if(req.params.s == 1) templateVars.successcode = 'added_earl';
 
+    console.log(req.query.s);
     res.render('urls_index', templateVars);
   });
   
@@ -32,30 +32,34 @@ router.get('/new', (req, res) => {
 });
 
 router.get('/:id', (req, res) => {
-    const templateVars = utility.defaultTemplateVars(req);
-    templateVars.user = db.users[req.session.userid];
+  const templateVars = utility.defaultTemplateVars(req);
+  templateVars.user = db.users[req.session.userid];
 
-    utility.authCheck(req,res);
+  utility.authCheck(req,res);
 
-    // Setup template vars
-    templateVars.shortURL = req.params.id;
-    templateVars.longURL = db.earlsDatabase[req.params.id].longURL;
+  // Setup template vars
+  templateVars.shortURL = req.params.id;
+  templateVars.longURL = db.earlsDatabase[req.params.id].longURL;
 
-    res.render('urls_show', templateVars);
+  res.render('urls_show', templateVars);
 });
 
 router.post('/:id', (req,res) => {
   utility.authCheck(req,res);
 
-  db.modifyEarl(req.params.id, req.body.longURL);
-  res.redirect('/');
+  db.modifyEarl(req.params.id, req.body.longURL)
+  .then(() => { 
+    res.redirect('/urls?s=2');
+  });
 });
 
 router.post('/:id/delete', (req, res) => {
   utility.authCheck(req,res);
   
-  db.deleteEarl(req.params.id);
-  res.redirect('/');
+  db.deleteEarl(req.params.id)
+  .then(() => {
+    res.redirect('/urls?s=3');
+  });
 });
 
 module.exports = router;
